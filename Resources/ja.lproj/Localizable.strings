@@ -1,0 +1,20 @@
+/* 日本語 */
+"menu.watchFolder" = "対象フォルダ: %@";
+"menu.clearedCount" = "警告の印を消した回数: %d";
+"menu.changeFolder" = "対象フォルダを変える…";
+"menu.clearNow" = "今ある警告の印を消す";
+"menu.openAtLogin" = "Macをつけたとき、WarnOff を始める";
+"menu.openLog" = "作業メモを開く";
+"menu.about" = "WarnOff について";
+"menu.quit" = "WarnOff を終了する";
+"status.watching" = "対象フォルダを見守っています";
+"status.clearedOnLaunch" = "起動したとき、警告の印を %d 件消しました";
+"status.clearedFile" = "警告の印を消しました: %@";
+"status.folderSet" = "対象フォルダ: %@";
+"status.clearing" = "今ある警告の印を消しています…";
+"status.clearedNone" = "消す警告の印はありませんでした";
+"status.clearedCount" = "警告の印を %d 件消しました";
+"status.loginFailed" = "Mac起動時の設定を変えられませんでした";
+"panel.choose" = "対象にする";
+"panel.hint" = "新しいアプリが入ったら、警告の印を消すフォルダを選んでください";
+"about.credits" = "選んだフォルダに入ったアプリから、警告の印を消します。";

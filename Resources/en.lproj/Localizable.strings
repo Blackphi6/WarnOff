@@ -1,0 +1,20 @@
+/* English — default */
+"menu.watchFolder" = "Watch folder: %@";
+"menu.clearedCount" = "Warnings cleared: %d";
+"menu.changeFolder" = "Change watch folder…";
+"menu.clearNow" = "Clear warnings now";
+"menu.openAtLogin" = "Open WarnOff when this Mac starts";
+"menu.openLog" = "Open activity log";
+"menu.about" = "About WarnOff";
+"menu.quit" = "Quit WarnOff";
+"status.watching" = "Watching the watch folder";
+"status.clearedOnLaunch" = "Cleared %d warning(s) at launch";
+"status.clearedFile" = "Cleared warning: %@";
+"status.folderSet" = "Watch folder: %@";
+"status.clearing" = "Clearing existing warnings…";
+"status.clearedNone" = "No warnings to clear";
+"status.clearedCount" = "Cleared %d warning(s)";
+"status.loginFailed" = "Couldn’t change the startup setting";
+"panel.choose" = "Use this folder";
+"panel.hint" = "Choose the folder where new apps should have their warning marks cleared.";
+"about.credits" = "WarnOff removes the warning mark from apps that appear in the folder you choose.";
