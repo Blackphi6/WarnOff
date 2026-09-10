@@ -41,7 +41,7 @@ make install
 2. Default watch folder is `/Applications`.
 3. Change folder with “Change watch folder…” / 「対象フォルダを変える…」.
 4. Clear existing marks with “Clear warnings now” / 「今ある警告の印を消す」.
-5. Optional: open at login.
+5. Open at login is on by default the first time you launch; turn it off in the menu if you prefer.
 6. Activity log: `~/Library/Logs/WarnOff.log`
 7. Quit with “Quit WarnOff” / 「WarnOff を終了する」 (this exits the app; there is no separate “pause watching” item).
 

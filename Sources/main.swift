@@ -314,17 +314,34 @@ final class AppState {
     var watchPath: String
     var lastMessage: String = L10n.t("status.watching")
     var clearedCount: Int = 0
-    var openAtLogin: Bool = SMAppService.mainApp.status == .enabled
+    var openAtLogin: Bool = false
     private var watcher: FolderWatcher?
 
     init(initialPath: String) {
         watchPath = initialPath
+        // 初めて入れた人は、ログイン項目を最初からオンにする（一度だけ）
+        Self.enableLoginItemOnFirstLaunch()
+        openAtLogin = SMAppService.mainApp.status == .enabled
         startWatcher()
         let path = watchPath
         Task.detached { [weak self] in
             let n = QuarantineCore.scan(root: URL(fileURLWithPath: path))
             await self?.noteScan(count: n, message: L10n.f("status.clearedOnLaunch", n), skipIfZero: true)
         }
+    }
+
+    /// 初回起動だけログイン項目を登録する。あとはユーザーのオン/オフを尊重する。
+    private static func enableLoginItemOnFirstLaunch() {
+        let key = "didConfigureLoginItem"
+        if UserDefaults.standard.bool(forKey: key) { return }
+        if SMAppService.mainApp.status != .enabled {
+            do {
+                try SMAppService.mainApp.register()
+            } catch {
+                Log.line("login item default: \(error.localizedDescription)")
+            }
+        }
+        UserDefaults.standard.set(true, forKey: key)
     }
 
     func startWatcher() {
@@ -383,6 +400,7 @@ final class AppState {
                 try SMAppService.mainApp.unregister()
             }
             openAtLogin = SMAppService.mainApp.status == .enabled
+            UserDefaults.standard.set(true, forKey: "didConfigureLoginItem")
         } catch {
             lastMessage = L10n.t("status.loginFailed")
             Log.line("login item: \(error.localizedDescription)")
