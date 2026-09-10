@@ -1,5 +1,9 @@
 # WarnOff
 
+<video src="docs/demo.mp4" controls width="800" title="WarnOff demo">
+  <a href="docs/demo.mp4">Watch demo (MP4)</a>
+</video>
+
 Menu bar tool for macOS that clears the Gatekeeper quarantine mark (`com.apple.quarantine`) from `.app` / `.dmg` / `.zip` files in a folder you choose (default: `/Applications`).
 
 メニューバーだけで動く Mac 用の小さな道具です。選んだフォルダに入った `.app` / `.dmg` / `.zip` から、警告の印（隔離属性）を自動で消します。最初の対象は `/Applications` です。
