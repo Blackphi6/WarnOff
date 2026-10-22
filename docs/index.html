@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WarnOff — Gatekeeperの警告印をメニューバーから消す</title>
+<meta name="description" content="信頼できるアプリの隔離属性(quarantine)を自動で消す、Mac用の軽量メニューバーツール。">
+<style>
+  :root{
+    --bg:#0b0c0f; --panel:#15171c; --text:#eef0f3; --sub:#9aa3af;
+    --accent:#4f7dff; --accent2:#7c5cff; --border:#232630; --radius:14px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f7f8fa; --panel:#ffffff; --text:#14171c; --sub:#596170; --border:#e4e7ec; }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Helvetica Neue",Arial,sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 20px;}
+  header.hero{padding:72px 0 48px; text-align:center;}
+  .icon{width:96px; height:96px; border-radius:22px; box-shadow:0 10px 30px rgba(0,0,0,.25);}
+  h1{font-size:2.1rem; margin:22px 0 10px;}
+  .tagline{color:var(--sub); font-size:1.1rem; max-width:560px; margin:0 auto 28px;}
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 22px; border-radius:999px; text-decoration:none;
+    font-weight:600; font-size:0.95rem; transition:transform .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
+  .btn.ghost{background:var(--panel); color:var(--text); border:1px solid var(--border);}
+  section{padding:40px 0;}
+  video{width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:24px;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px;}
+  .card h3{margin:0 0 8px; font-size:1rem;}
+  .card p{margin:0; color:var(--sub); font-size:0.92rem;}
+  .warn{background:var(--panel); border:1px solid var(--border); border-left:4px solid var(--accent2); border-radius:var(--radius); padding:18px 20px; color:var(--sub); font-size:0.92rem;}
+  pre{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow-x:auto; font-size:0.85rem;}
+  footer{padding:40px 0 60px; text-align:center; color:var(--sub); font-size:0.85rem;}
+  footer a{color:var(--sub);}
+  h2{font-size:1.3rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <img class="icon" src="https://raw.githubusercontent.com/Blackphi6/WarnOff/main/Assets/AppIcon-1024.png" alt="WarnOff icon">
+    <h1>WarnOff</h1>
+    <p class="tagline">信頼できるアプリの「開発元を確認できません」警告を、メニューバーからワンクリックで消す。</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Blackphi6/WarnOff/releases/latest">ダウンロード (無料)</a>
+      <a class="btn ghost" href="https://github.com/Blackphi6/WarnOff">GitHubで見る</a>
+    </div>
+  </header>
+
+  <section>
+    <video src="https://github.com/Blackphi6/WarnOff/raw/main/docs/demo.mp4" controls></video>
+  </section>
+
+  <section>
+    <h2>できること</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>自動で監視</h3>
+        <p>選んだフォルダ(デフォルトは /Applications)を見て、隔離属性(quarantine)が付いたファイルを自動で解除します。</p>
+      </div>
+      <div class="card">
+        <h3>対応形式</h3>
+        <p>.app / .dmg / .zip に対応。ダウンロード中のファイルはスキップします。</p>
+      </div>
+      <div class="card">
+        <h3>軽量・メニューバーのみ</h3>
+        <p>Dockを占有しないメニューバーアプリ。ログイン時に自動起動(切替可)。</p>
+      </div>
+      <div class="card">
+        <h3>多言語対応</h3>
+        <p>Macの言語設定に合わせて日本語・英語・簡体字中国語で表示されます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="warn">
+      <strong>信頼できるファイル専用です。</strong> 隔離属性はダウンロードしたファイルに対するmacOSの安全確認です。見知らぬ提供元のアプリまで解除すると、危険なソフトも警告なしで開けるようになります。自分で入れた・信頼しているアプリだけに使ってください。
+    </div>
+  </section>
+
+  <section>
+    <h2>インストール</h2>
+    <ol>
+      <li><a href="https://github.com/Blackphi6/WarnOff/releases/latest">Releases</a> から <code>WarnOff-macOS.zip</code> をダウンロード</li>
+      <li>展開して <code>WarnOff.app</code> を <code>/Applications</code> に移動</li>
+      <li>初回は Control クリック → 「開く」で起動(Gatekeeperの確認)</li>
+      <li>メニューバーのシールドアイコンをクリック</li>
+    </ol>
+    <h2>ソースからビルド</h2>
+    <pre>git clone https://github.com/Blackphi6/WarnOff.git
+cd WarnOff
+make
+make install</pre>
+    <p class="tagline" style="margin:0;">macOS 14+ / Apple Silicon・Intel 両対応 / MIT License</p>
+  </section>
+
+  <footer>
+    <a href="https://github.com/Blackphi6/WarnOff">github.com/Blackphi6/WarnOff</a> · MIT License
+  </footer>
+
+</div>
+</body>
+</html>
