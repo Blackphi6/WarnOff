@@ -10,7 +10,8 @@ SRC     := Sources/main.swift
 ICNS    := Assets/AppIcon.icns
 LOCALES := Resources/en.lproj/Localizable.strings \
            Resources/ja.lproj/Localizable.strings \
-           Resources/zh-Hans.lproj/Localizable.strings
+           Resources/zh-Hans.lproj/Localizable.strings \
+           Resources/zh-Hant.lproj/Localizable.strings
 FRAMEWORKS := -framework SwiftUI -framework AppKit -framework CoreServices -framework ServiceManagement
 
 .PHONY: all app test install clean run icons release-zip
@@ -35,7 +36,7 @@ $(DIST): $(SRC) Info.plist $(ICNS) $(LOCALES)
 	rm -f "$(MACOS)/$(BIN)-arm64" "$(MACOS)/$(BIN)-x86_64"
 	cp Info.plist "$(DIST)/Contents/Info.plist"
 	cp "$(ICNS)" "$(RES)/AppIcon.icns"
-	cp -R Resources/en.lproj Resources/ja.lproj Resources/zh-Hans.lproj "$(RES)/"
+	cp -R Resources/en.lproj Resources/ja.lproj Resources/zh-Hans.lproj Resources/zh-Hant.lproj "$(RES)/"
 	printf 'APPL????' > "$(DIST)/Contents/PkgInfo"
 	codesign --force --sign - --identifier "$(BUNDLE)" "$(DIST)"
 

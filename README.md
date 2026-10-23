@@ -55,7 +55,7 @@ Incomplete downloads (`.download`, `.crdownload`, …) are skipped. Missing path
 
 ## Languages
 
-UI follows the Mac language: English, Japanese, Simplified Chinese.
+UI follows the Mac language: English, Japanese, Simplified Chinese, Traditional Chinese (Taiwan).
 
 ## License
 
