@@ -9,6 +9,7 @@ test -s "$ROOT/dist/WarnOff.app/Contents/Resources/AppIcon.icns"
 test -s "$ROOT/dist/WarnOff.app/Contents/Resources/en.lproj/Localizable.strings"
 test -s "$ROOT/dist/WarnOff.app/Contents/Resources/ja.lproj/Localizable.strings"
 test -s "$ROOT/dist/WarnOff.app/Contents/Resources/zh-Hans.lproj/Localizable.strings"
+test -s "$ROOT/dist/WarnOff.app/Contents/Resources/zh-Hant.lproj/Localizable.strings"
 "$BIN" --self-test
 
 TMP="$(mktemp -d /tmp/warnoff.XXXXXX)"
