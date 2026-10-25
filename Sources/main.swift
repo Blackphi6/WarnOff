@@ -161,8 +161,117 @@ enum QuarantineCore {
             return fail("resolved target escaped watch root")
         }
 
+        let originalTrust = TrustStore.load()
+        defer {
+            if let data = try? JSONEncoder().encode(originalTrust) {
+                UserDefaults.standard.set(data, forKey: "trustList")
+            }
+        }
+        let trustTestPath = "/tmp/warnoff-selftest-trust.app"
+        let afterUpsert = TrustStore.upsert(path: trustTestPath, status: .fullyTrusted)
+        guard afterUpsert.first(where: { $0.path == trustTestPath })?.status == .fullyTrusted else {
+            return fail("trust upsert")
+        }
+        guard TrustStore.status(forPath: trustTestPath) == .fullyTrusted else {
+            return fail("trust status lookup")
+        }
+
         FileHandle.standardOutput.write(Data("self-test ok\n".utf8))
         return 0
+    }
+}
+
+/// アプリの署名・ノータライズ状態。自動クリアを許可する範囲を決めるために使う。
+enum SignatureStatus: String, Codable {
+    case fullyTrusted
+    case signedNotNotarized
+    case unsigned
+
+    var labelKey: String {
+        switch self {
+        case .fullyTrusted: return "trust.status.fullyTrusted"
+        case .signedNotNotarized: return "trust.status.signedNotNotarized"
+        case .unsigned: return "trust.status.unsigned"
+        }
+    }
+
+    var detailKey: String {
+        switch self {
+        case .fullyTrusted: return "trust.detail.fullyTrusted"
+        case .signedNotNotarized: return "trust.detail.signedNotNotarized"
+        case .unsigned: return "trust.detail.unsigned"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .fullyTrusted: return .green
+        case .signedNotNotarized: return .yellow
+        case .unsigned: return .red
+        }
+    }
+}
+
+/// codesign と spctl を外部プロセスとして呼んで署名状態を判定する。メインスレッドをブロックしないよう、呼び出し側でバックグラウンドから呼ぶこと。
+enum CodeSignChecker {
+    static func check(path: String) -> SignatureStatus {
+        guard run("/usr/bin/codesign", ["-dv", "--verbose=4", path]) else {
+            return .unsigned
+        }
+        let notarized = run("/usr/sbin/spctl", ["--assess", "--type", "execute", "--verbose", path])
+        return notarized ? .fullyTrusted : .signedNotNotarized
+    }
+
+    @discardableResult
+    private static func run(_ exe: String, _ args: [String]) -> Bool {
+        guard FileManager.default.fileExists(atPath: exe) else { return false }
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: exe)
+        proc.arguments = args
+        proc.standardOutput = FileHandle.nullDevice
+        proc.standardError = FileHandle.nullDevice
+        do {
+            try proc.run()
+        } catch {
+            Log.line("\(exe) failed: \(error.localizedDescription)")
+            return false
+        }
+        proc.waitUntilExit()
+        return proc.terminationStatus == 0
+    }
+}
+
+/// ユーザーが「信頼する」と決めたアプリの一覧。UserDefaults に JSON で保存する。
+struct TrustEntry: Codable, Identifiable, Equatable {
+    var id: String { path }
+    let path: String
+    var status: SignatureStatus
+    let addedAt: Date
+}
+
+enum TrustStore {
+    private static let key = "trustList"
+
+    static func load() -> [TrustEntry] {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([TrustEntry].self, from: data)) ?? []
+    }
+
+    static func status(forPath path: String) -> SignatureStatus? {
+        load().first { $0.path == path }?.status
+    }
+
+    @discardableResult
+    static func upsert(path: String, status: SignatureStatus) -> [TrustEntry] {
+        var entries = load()
+        if let idx = entries.firstIndex(where: { $0.path == path }) {
+            entries[idx] = TrustEntry(path: path, status: status, addedAt: entries[idx].addedAt)
+        } else {
+            entries.append(TrustEntry(path: path, status: status, addedAt: Date()))
+        }
+        guard let data = try? JSONEncoder().encode(entries) else { return entries }
+        UserDefaults.standard.set(data, forKey: key)
+        return entries
     }
 }
 
@@ -199,6 +308,7 @@ final class FolderWatcher: @unchecked Sendable {
     private var recentlyDone: [String: Date] = [:]
     private var root: URL
     var onCleared: ((URL) -> Void)?
+    var onNeedsConfirmation: ((URL, SignatureStatus) -> Void)?
 
     init(root: URL) {
         self.root = root
@@ -290,10 +400,30 @@ final class FolderWatcher: @unchecked Sendable {
             if let last = recentlyDone[target.path], Date().timeIntervalSince(last) < 30 {
                 continue
             }
+            process(target: target)
+        }
+    }
+
+    /// .app は署名状態を見て、十分信頼できる(Fully Trusted)ときだけ自動でクリアする。dmg/zip は従来どおり即クリア。
+    private func process(target: URL) {
+        guard target.pathExtension.lowercased() == "app" else {
             if QuarantineCore.clear(at: target) {
                 recentlyDone[target.path] = Date()
                 DispatchQueue.main.async { self.onCleared?(target) }
             }
+            return
+        }
+
+        let status = TrustStore.status(forPath: target.path) ?? CodeSignChecker.check(path: target.path)
+        guard status == .fullyTrusted else {
+            recentlyDone[target.path] = Date()
+            DispatchQueue.main.async { self.onNeedsConfirmation?(target, status) }
+            return
+        }
+        TrustStore.upsert(path: target.path, status: .fullyTrusted)
+        if QuarantineCore.clear(at: target) {
+            recentlyDone[target.path] = Date()
+            DispatchQueue.main.async { self.onCleared?(target) }
         }
     }
 }
@@ -315,6 +445,7 @@ final class AppState {
     var lastMessage: String = L10n.t("status.watching")
     var clearedCount: Int = 0
     var openAtLogin: Bool = false
+    var trustList: [TrustEntry] = TrustStore.load()
     private var watcher: FolderWatcher?
 
     init(initialPath: String) {
@@ -355,8 +486,53 @@ final class AppState {
                 self?.lastMessage = L10n.f("status.clearedFile", url.lastPathComponent)
             }
         }
+        w.onNeedsConfirmation = { [weak self] url, status in
+            Task { @MainActor in
+                self?.trustList = TrustStore.load()
+                self?.lastMessage = L10n.f("status.needsConfirmation", url.lastPathComponent)
+            }
+        }
         watcher = w
         w.start()
+    }
+
+    /// ファイル選択 → 署名確認 → ダイアログ確認、の順で信頼リストに追加する。
+    func addAppToTrustList() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowedContentTypes = [.application]
+        panel.prompt = L10n.t("panel.chooseApp")
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        lastMessage = L10n.t("status.checkingSignature")
+        let path = url.path
+        Task.detached { [weak self] in
+            let status = CodeSignChecker.check(path: path)
+            await self?.confirmTrust(path: path, status: status)
+        }
+    }
+
+    private func confirmTrust(path: String, status: SignatureStatus) {
+        let name = (path as NSString).lastPathComponent
+        let alert = NSAlert()
+        alert.messageText = L10n.f("trust.dialogTitle", name)
+        alert.informativeText = L10n.t(status.detailKey)
+        alert.alertStyle = status == .unsigned ? .critical : .informational
+        alert.addButton(withTitle: L10n.t(status == .unsigned ? "trust.addAnyway" : "trust.add"))
+        alert.addButton(withTitle: L10n.t("trust.cancel"))
+        NSApp.activate(ignoringOtherApps: true)
+        guard alert.runModal() == .alertFirstButtonReturn else {
+            lastMessage = L10n.t("status.trustCancelled")
+            return
+        }
+
+        trustList = TrustStore.upsert(path: path, status: status)
+        lastMessage = L10n.f("status.trustAdded", name)
+        if status == .fullyTrusted {
+            _ = QuarantineCore.clear(at: URL(fileURLWithPath: path))
+        }
     }
 
     func pickFolder() {
@@ -434,6 +610,16 @@ struct MenuContent: View {
             get: { state.openAtLogin },
             set: { state.setOpenAtLogin($0) }
         ))
+        Divider()
+        ForEach(state.trustList) { entry in
+            Label(
+                (entry.path as NSString).lastPathComponent,
+                systemImage: "circle.fill"
+            )
+            .foregroundStyle(entry.status.color)
+        }
+        Button(L10n.t("menu.addTrustedApp")) { state.addAppToTrustList() }
+        Divider()
         Button(L10n.t("menu.openLog")) { state.openLog() }
         Button(L10n.t("menu.about")) { state.showAbout() }
         Divider()
