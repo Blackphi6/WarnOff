@@ -1,0 +1,20 @@
+/* 繁體中文（台灣） */
+"menu.watchFolder" = "監控資料夾：%@";
+"menu.clearedCount" = "已清除警告次數：%d";
+"menu.changeFolder" = "變更監控資料夾…";
+"menu.clearNow" = "立即清除警告標記";
+"menu.openAtLogin" = "開機時啟動 WarnOff";
+"menu.openLog" = "開啟活動紀錄";
+"menu.about" = "關於 WarnOff";
+"menu.quit" = "結束 WarnOff";
+"status.watching" = "正在監控資料夾";
+"status.clearedOnLaunch" = "啟動時已清除 %d 個警告標記";
+"status.clearedFile" = "已清除警告：%@";
+"status.folderSet" = "監控資料夾：%@";
+"status.clearing" = "正在清除現有警告標記…";
+"status.clearedNone" = "沒有需要清除的警告標記";
+"status.clearedCount" = "已清除 %d 個警告標記";
+"status.loginFailed" = "無法變更開機啟動設定";
+"panel.choose" = "設為監控資料夾";
+"panel.hint" = "請選擇資料夾。放入其中的新應用程式會自動清除警告標記。";
+"about.credits" = "WarnOff 會清除你所選資料夾中應用程式的警告標記。";
