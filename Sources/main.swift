@@ -613,7 +613,7 @@ struct MenuContent: View {
         Divider()
         ForEach(state.trustList) { entry in
             Label(
-                (entry.path as NSString).lastPathComponent,
+                "\((entry.path as NSString).lastPathComponent) — \(L10n.t(entry.status.labelKey))",
                 systemImage: "circle.fill"
             )
             .foregroundStyle(entry.status.color)
